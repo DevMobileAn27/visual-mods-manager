@@ -36,7 +36,7 @@ void main() {
         allSkins.add('${entry.key} - $outfit');
       }
     }
-    expect(allSkins, hasLength(32));
+    expect(allSkins, hasLength(31));
     expect(zzzSkinAvatarAssets.keys.toSet(), allSkins);
     final manifest = File('pubspec.yaml').readAsStringSync();
     for (final asset in [

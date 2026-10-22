@@ -197,7 +197,6 @@ const zzzSkinFolders = <String, List<String>>{
   'Pan Yinhu': ['Culinary Jewel'],
   'Phoenix Reffaella': ['Daydream Complex', 'The Illness Called Life'],
   'Remielle Dan': ['Moonlight Whispers', 'Seashade Pas Seul'],
-  'Severian Lowell': ['Solemnly Impeccable'],
   'Sigrid de L\'Azur': ['Majestic Wavechaser'],
   'Sunna': ['Afternoon Tea Break', 'Delusions in Business'],
   'Ukinami Yuzuha': ['Tanuki in Broad Daylight'],
@@ -236,11 +235,9 @@ const zzzSkinAvatarAssets = <String, String>{
   'Pan Yinhu - Culinary Jewel':
       'assets/characters/pan_yinhu/culinary_jewel.webp',
   'Phoenix Reffaella - Daydream Complex':
-      'assets/characters/phoenix_reffaella/daydream_complex.webp',
+      'assets/characters/phoenix_reffaella/daydream_complex.png',
   'Phoenix Reffaella - The Illness Called Life':
-      'assets/characters/phoenix_reffaella/the_illness_called_life.webp',
-  'Severian Lowell - Solemnly Impeccable':
-      'assets/characters/severian_lowell/solemnly_impeccable.webp',
+      'assets/characters/phoenix_reffaella/the_illness_called_life.png',
   'Remielle Dan - Moonlight Whispers':
       'assets/characters/remielle_dan/moonlight_whispers.png',
   'Remielle Dan - Seashade Pas Seul':
