@@ -66,6 +66,7 @@ const zzzCharacterCatalog = <String, ZzzCharacterInfo>{
   'Norma Hollowell': ZzzCharacterInfo('Norma Hollowell', ZzzAttribute.fire),
   'Orphie and Magus': ZzzCharacterInfo('Orphie and Magus', ZzzAttribute.fire),
   'Pan Yinhu': ZzzCharacterInfo('Pan Yinhu', ZzzAttribute.physical),
+  'Phoenix Reffaella': ZzzCharacterInfo('Phoenix Reffaella', ZzzAttribute.fire),
   'Piper Wheel': ZzzCharacterInfo('Piper Wheel', ZzzAttribute.physical),
   'Promeia': ZzzCharacterInfo('Promeia', ZzzAttribute.ice),
   'Pulchra': ZzzCharacterInfo('Pulchra', ZzzAttribute.physical),
@@ -75,6 +76,7 @@ const zzzCharacterCatalog = <String, ZzzCharacterInfo>{
   'Rina': ZzzCharacterInfo('Rina', ZzzAttribute.electric),
   'Roxy Ifrita Pryce': ZzzCharacterInfo('Roxy Ifrita Pryce', ZzzAttribute.wind),
   'Seed': ZzzCharacterInfo('Seed', ZzzAttribute.electric),
+  'Severian Lowell': ZzzCharacterInfo('Severian Lowell', ZzzAttribute.wind),
   'Seth Lowell': ZzzCharacterInfo('Seth Lowell', ZzzAttribute.electric),
   'Soldier 0 - Anby': ZzzCharacterInfo(
     'Soldier 0 - Anby',
@@ -147,6 +149,7 @@ const zzzCharacterFolders = <String>[
   'Norma Hollowell',
   'Orphie and Magus',
   'Pan Yinhu',
+  'Phoenix Reffaella',
   'Piper Wheel',
   'Promeia',
   'Pulchra',
@@ -156,6 +159,7 @@ const zzzCharacterFolders = <String>[
   'Rina',
   'Roxy Ifrita Pryce',
   'Seed',
+  'Severian Lowell',
   'Seth Lowell',
   'Soldier 0 - Anby',
   'Soldier 11',
@@ -191,7 +195,9 @@ const zzzSkinFolders = <String, List<String>>{
   'Nangong Yu': ['Heartfelt Support', "Rhapsody's Muse"],
   'Nicole Demara': ['Cunning Cutie'],
   'Pan Yinhu': ['Culinary Jewel'],
+  'Phoenix Reffaella': ['Daydream Complex', 'The Illness Called Life'],
   'Remielle Dan': ['Moonlight Whispers', 'Seashade Pas Seul'],
+  'Severian Lowell': ['Solemnly Impeccable'],
   'Sigrid de L\'Azur': ['Majestic Wavechaser'],
   'Sunna': ['Afternoon Tea Break', 'Delusions in Business'],
   'Ukinami Yuzuha': ['Tanuki in Broad Daylight'],
@@ -229,6 +235,12 @@ const zzzSkinAvatarAssets = <String, String>{
       'assets/characters/nicole_demara/cunning_cutie.webp',
   'Pan Yinhu - Culinary Jewel':
       'assets/characters/pan_yinhu/culinary_jewel.webp',
+  'Phoenix Reffaella - Daydream Complex':
+      'assets/characters/phoenix_reffaella/daydream_complex.webp',
+  'Phoenix Reffaella - The Illness Called Life':
+      'assets/characters/phoenix_reffaella/the_illness_called_life.webp',
+  'Severian Lowell - Solemnly Impeccable':
+      'assets/characters/severian_lowell/solemnly_impeccable.webp',
   'Remielle Dan - Moonlight Whispers':
       'assets/characters/remielle_dan/moonlight_whispers.png',
   'Remielle Dan - Seashade Pas Seul':
@@ -289,6 +301,7 @@ const zzzAvatarAssets = <String, String>{
   'Norma Hollowell': 'assets/characters/norma_hollowell/default.png',
   'Orphie and Magus': 'assets/characters/orphie_and_magus/default.png',
   'Pan Yinhu': 'assets/characters/pan_yinhu/default.png',
+  'Phoenix Reffaella': 'assets/characters/phoenix_reffaella/default.webp',
   'Piper Wheel': 'assets/characters/piper_wheel/default.png',
   'Promeia': 'assets/characters/promeia/default.png',
   'Pulchra': 'assets/characters/pulchra/default.png',
@@ -298,6 +311,7 @@ const zzzAvatarAssets = <String, String>{
   'Rina': 'assets/characters/rina/default.png',
   'Roxy Ifrita Pryce': 'assets/characters/roxy_ifrita_pryce/default.png',
   'Seed': 'assets/characters/seed/default.png',
+  'Severian Lowell': 'assets/characters/severian_lowell/default.webp',
   'Seth Lowell': 'assets/characters/seth_lowell/default.png',
   'Soldier 0 - Anby': 'assets/characters/soldier_0_anby/default.png',
   'Soldier 11': 'assets/characters/soldier_11/default.png',

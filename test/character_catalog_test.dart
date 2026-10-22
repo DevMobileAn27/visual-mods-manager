@@ -5,12 +5,17 @@ import 'package:xxmi_manager/core/character_catalog.dart';
 
 void main() {
   test('contains the current agents and both protagonists', () {
-    expect(zzzCharacterFolders, hasLength(62));
+    expect(zzzCharacterFolders, hasLength(64));
     expect(zzzCharacterFolders, contains('Promeia'));
-    expect(zzzCharacterFolders, containsAll(['Belle', 'Wise']));
+    expect(
+      zzzCharacterFolders,
+      containsAll(['Belle', 'Wise', 'Phoenix Reffaella', 'Severian Lowell']),
+    );
   });
 
   test('stores an attribute for every character folder', () {
+    expect(zzzCharacterCatalog.keys.toSet(), zzzCharacterFolders.toSet());
+    expect(zzzAvatarAssets.keys.toSet(), zzzCharacterFolders.toSet());
     for (final character in zzzCharacterFolders) {
       expect(zzzCharacterInfoFor(character), isNotNull, reason: character);
     }
@@ -31,8 +36,19 @@ void main() {
         allSkins.add('${entry.key} - $outfit');
       }
     }
-    expect(allSkins, hasLength(29));
+    expect(allSkins, hasLength(32));
     expect(zzzSkinAvatarAssets.keys.toSet(), allSkins);
+    final manifest = File('pubspec.yaml').readAsStringSync();
+    for (final asset in [
+      ...zzzSkinAvatarAssets.values,
+      ...zzzAvatarAssets.values,
+    ]) {
+      expect(
+        manifest,
+        contains('    - ${asset.substring(0, asset.lastIndexOf('/') + 1)}'),
+        reason: asset,
+      );
+    }
     for (final asset in zzzSkinAvatarAssets.values) {
       expect(File(asset).existsSync(), isTrue, reason: asset);
     }
