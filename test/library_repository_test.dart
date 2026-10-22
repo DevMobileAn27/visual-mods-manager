@@ -22,6 +22,122 @@ void main() {
     if (await sandbox.exists()) await sandbox.delete(recursive: true);
   });
 
+  group('import dropped downloads', () {
+    test(
+      'copies ZIP/RAR into the selected outfit and updates badge counts',
+      () async {
+        final zip = File(p.join(sandbox.path, 'Outfit.ZIP'));
+        final rar = File(p.join(sandbox.path, 'Other.rar'));
+        await zip.writeAsBytes([1, 2, 3]);
+        await rar.writeAsBytes([4, 5, 6]);
+        final actualFolder = Directory(p.join(downloadPath, 'a - outfit'));
+        await actualFolder.create(recursive: true);
+
+        final copied = await repository.importDownloadArchive(
+          zip.path,
+          downloadPath,
+          'A - Outfit',
+        );
+        await repository.importDownloadArchive(
+          rar.path,
+          downloadPath,
+          'A - Outfit',
+        );
+
+        expect(copied!.path, p.join(actualFolder.path, 'Outfit.ZIP'));
+        expect(await copied.readAsBytes(), [1, 2, 3]);
+        expect(await zip.readAsBytes(), [1, 2, 3]);
+        expect(await rar.readAsBytes(), [4, 5, 6]);
+        expect(await repository.scanArchiveCounts(downloadPath), {
+          'a - outfit': 2,
+        });
+      },
+    );
+
+    test(
+      'keeps both files on a case-insensitive collision and ignores self-drops',
+      () async {
+        final source = File(p.join(sandbox.path, 'mod.zip'));
+        await source.writeAsString('new');
+        final folder = Directory(p.join(downloadPath, 'A (default)'));
+        await folder.create(recursive: true);
+        final existing = File(p.join(folder.path, 'MOD.zip'));
+        await existing.writeAsString('old');
+        await Directory(p.join(folder.path, 'mod (1).zip')).create();
+
+        final copied = await repository.importDownloadArchive(
+          source.path,
+          downloadPath,
+          'A (default)',
+        );
+        expect(p.basename(copied!.path), 'mod (2).zip');
+        expect(await copied.readAsString(), 'new');
+        expect(await existing.readAsString(), 'old');
+        expect(await source.exists(), isTrue);
+        expect(
+          await repository.importDownloadArchive(
+            copied.path,
+            downloadPath,
+            'A (default)',
+          ),
+          isNull,
+        );
+        expect(await repository.scanArchiveCounts(downloadPath), {
+          'a (default)': 2,
+        });
+      },
+    );
+
+    test('skips unsupported/hidden files, directories and links', () async {
+      final text = File(p.join(sandbox.path, 'readme.txt'));
+      final hidden = File(p.join(sandbox.path, '.hidden.zip'));
+      final directory = Directory(p.join(sandbox.path, 'Folder.zip'));
+      await text.writeAsString('text');
+      await hidden.writeAsString('hidden');
+      await directory.create();
+      for (final path in [text.path, hidden.path, directory.path]) {
+        expect(
+          await repository.importDownloadArchive(path, downloadPath, 'A'),
+          isNull,
+        );
+      }
+      if (!Platform.isWindows) {
+        final link = Link(p.join(sandbox.path, 'linked.zip'));
+        await link.create(hidden.path);
+        expect(
+          await repository.importDownloadArchive(link.path, downloadPath, 'A'),
+          isNull,
+        );
+      }
+      expect(await Directory(downloadPath).exists(), isFalse);
+    });
+
+    test(
+      'rejects an escaped destination and reports a missing archive',
+      () async {
+        final source = File(p.join(sandbox.path, 'mod.zip'));
+        await source.writeAsString('source');
+        await expectLater(
+          repository.importDownloadArchive(
+            source.path,
+            downloadPath,
+            '../outside',
+          ),
+          throwsArgumentError,
+        );
+        await expectLater(
+          repository.importDownloadArchive(
+            p.join(sandbox.path, 'missing.zip'),
+            downloadPath,
+            'A',
+          ),
+          throwsA(isA<FileSystemException>()),
+        );
+        expect(await Directory(downloadPath).exists(), isFalse);
+      },
+    );
+  });
+
   group('rename detail entries', () {
     test('renames an archive without changing its contents', () async {
       final source = File(p.join(sandbox.path, 'old.zip'));

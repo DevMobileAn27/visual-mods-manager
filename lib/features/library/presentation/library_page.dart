@@ -9,6 +9,7 @@ import 'animated_search_field.dart';
 import 'library_card.dart';
 import 'library_tab_bar.dart';
 import 'rename_entry_dialog.dart';
+import 'download_drop_area.dart';
 import '../../../core/character_catalog.dart';
 import '../bloc/library_bloc.dart';
 import '../bloc/library_event.dart';
@@ -728,6 +729,11 @@ class _DetailViewState extends State<DetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final contents = loading
+        ? const Center(child: CircularProgressIndicator())
+        : entries.isEmpty
+        ? Center(child: Text(AppStrings.of(context).emptyFolder))
+        : FileEntryGrid(entries: entries, onContextMenu: menu);
     return BlocListener<LibraryBloc, LibraryState>(
       listenWhen: (previous, current) =>
           previous.status == LibraryStatus.loading &&
@@ -772,11 +778,24 @@ class _DetailViewState extends State<DetailView> {
             ),
           ),
           Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : entries.isEmpty
-                ? Center(child: Text(AppStrings.of(context).emptyFolder))
-                : FileEntryGrid(entries: entries, onContextMenu: menu),
+            child: widget.isDownload
+                ? DownloadDropArea(
+                    folderName: _displaySkinName(widget.skinName),
+                    onImport: (path) => context
+                        .read<LibraryBloc>()
+                        .repository
+                        .importDownloadArchive(
+                          path,
+                          widget.root,
+                          widget.skinName,
+                        ),
+                    onImported: () async {
+                      await load();
+                      if (mounted) widget.onRefresh();
+                    },
+                    child: contents,
+                  )
+                : contents,
           ),
         ],
       ),

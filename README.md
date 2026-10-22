@@ -55,10 +55,11 @@ Hover hoặc bấm kính lúp, rồi nhập tên nhân vật hoặc trang phục
 ## Cài đặt trang phục
 
 1. Trong tab **Download**, mở card trang phục muốn cài.
-2. Bấm biểu tượng thư mục để mở vị trí lưu file, rồi đặt file ZIP/RAR đã tải vào đó.
-3. Quay lại app, bấm **Làm mới**.
-4. Bấm chuột phải vào file ZIP/RAR, chọn **Dùng trang phục này**.
-5. Chờ giải nén hoàn tất, rồi chuyển sang tab **Mods** để xem mod đã cài.
+2. Kéo một hoặc nhiều file ZIP/RAR từ Finder hoặc File Explorer vào màn hình chi tiết. Danh sách tự cập nhật khi sao chép xong.
+3. Bấm chuột phải vào file ZIP/RAR, chọn **Dùng trang phục này**.
+4. Chờ giải nén hoàn tất, rồi chuyển sang tab **Mods** để xem mod đã cài.
+
+Kéo thả giữ nguyên file gốc. File trùng tên được thêm số, ví dụ `Mod (1).zip`. Các loại file khác và thư mục sẽ được bỏ qua. Bạn cũng có thể bấm biểu tượng thư mục để thêm file bằng trình quản lý file, rồi bấm **Làm mới**.
 
 ![Màn hình chi tiết Download](docs/images/download-detail.png)
 

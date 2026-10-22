@@ -37,6 +37,31 @@ void main() {
   testWidgets('language radio cards stay horizontal and update the open page', (
     tester,
   ) async {
+    void expectLanguageSurfaces(AppLanguage selected) {
+      final tiles = tester.elementList(find.byType(RadioListTile<AppLanguage>));
+      expect(tiles, hasLength(AppLanguage.values.length));
+      for (final element in tiles) {
+        final tile = element.widget as RadioListTile<AppLanguage>;
+        final material = element.findAncestorWidgetOfExactType<Material>()!;
+        // Each tile paints its own background and ink on the same Material.
+        expect(
+          material.color,
+          tile.value == selected ? AppColors.primarySoft : AppColors.surface,
+        );
+        expect(material.clipBehavior, Clip.antiAlias);
+        final shape = material.shape! as RoundedRectangleBorder;
+        expect(
+          shape.side.color,
+          tile.value == selected ? AppColors.primary : AppColors.border,
+        );
+        element.visitAncestorElements((ancestor) {
+          if (ancestor.widget is Material) return false;
+          expect(ancestor.widget, isNot(isA<DecoratedBox>()));
+          return true;
+        });
+      }
+    }
+
     final cubit = AppLocaleCubit();
     addTearDown(cubit.close);
     await tester.pumpWidget(
@@ -58,6 +83,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expectLanguageSurfaces(AppLanguage.vietnamese);
     expect(find.text('Ngôn ngữ'), findsOneWidget);
     final vietnamese = tester.getCenter(find.text('Tiếng Việt'));
     final english = tester.getCenter(find.text('English'));
@@ -74,6 +100,7 @@ void main() {
     expect(find.text('Change'), findsNWidgets(2));
     expect(find.text('/ZZZ_Download'), findsOneWidget);
     expect(cubit.state, AppLanguage.english);
+    expectLanguageSurfaces(AppLanguage.english);
 
     await tester.tap(find.text('汉语'));
     await tester.pumpAndSettle();
@@ -82,5 +109,6 @@ void main() {
     expect(find.text('更改'), findsNWidgets(2));
     expect(find.text('/Mods'), findsOneWidget);
     expect(cubit.state, AppLanguage.chinese);
+    expectLanguageSurfaces(AppLanguage.chinese);
   });
 }

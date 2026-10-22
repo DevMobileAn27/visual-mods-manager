@@ -43,6 +43,73 @@ class LibraryRepository {
     return !RegExp(r'^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$').hasMatch(stem);
   }
 
+  /// Copies a dropped archive, preserving the source and existing downloads.
+  /// Returns null for unsupported items or files already in this folder.
+  Future<File?> importDownloadArchive(
+    String sourcePath,
+    String downloadPath,
+    String skinName,
+  ) async {
+    final name = p.basename(sourcePath);
+    if (name.startsWith('.') ||
+        !isValidEntryName(name) ||
+        !{'.zip', '.rar'}.contains(p.extension(name).toLowerCase())) {
+      return null;
+    }
+    if (!isValidEntryName(skinName)) {
+      throw ArgumentError.value(skinName, 'skinName');
+    }
+    final type = await FileSystemEntity.type(sourcePath, followLinks: false);
+    if (type == FileSystemEntityType.directory ||
+        type == FileSystemEntityType.link) {
+      return null;
+    }
+    if (type != FileSystemEntityType.file) {
+      throw FileSystemException('Source file not found', sourcePath);
+    }
+    final source = File(sourcePath);
+    final destination = await skinDirectory(downloadPath, skinName);
+    await destination.create(recursive: true);
+    if (p.equals(
+      p.dirname(await source.resolveSymbolicLinks()),
+      await destination.resolveSymbolicLinks(),
+    )) {
+      return null;
+    }
+
+    final existingNames = (await destination.list(followLinks: false).toList())
+        .map((entry) => p.basename(entry.path).toLowerCase())
+        .toSet();
+    var candidate = name;
+    var suffix = 1;
+    File target;
+    while (true) {
+      target = File(p.join(destination.path, candidate));
+      if (!existingNames.contains(candidate.toLowerCase())) {
+        try {
+          // Reserve the name without overwriting a file created during import.
+          await target.create(exclusive: true);
+          break;
+        } on FileSystemException {
+          if (await FileSystemEntity.type(target.path, followLinks: false) ==
+              FileSystemEntityType.notFound) {
+            rethrow;
+          }
+        }
+      }
+      candidate =
+          '${p.basenameWithoutExtension(name)} ($suffix)${p.extension(name)}';
+      suffix++;
+    }
+    try {
+      return await source.copy(target.path);
+    } catch (_) {
+      // A failed copy must not leave a partial archive in the library.
+      await target.delete();
+      rethrow;
+    }
+  }
+
   Future<FileSystemEntity> renameEntry(
     FileSystemEntity entry,
     String newName,

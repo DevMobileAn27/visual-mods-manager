@@ -257,13 +257,14 @@ class _LanguageSettings extends StatelessWidget {
                 if (language != AppLanguage.values.first)
                   const SizedBox(width: 12),
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: selected == language
-                          ? AppColors.primarySoft
-                          : AppColors.surface,
+                  child: Material(
+                    color: selected == language
+                        ? AppColors.primarySoft
+                        : AppColors.surface,
+                    clipBehavior: Clip.antiAlias,
+                    shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
+                      side: BorderSide(
                         color: selected == language
                             ? AppColors.primary
                             : AppColors.border,

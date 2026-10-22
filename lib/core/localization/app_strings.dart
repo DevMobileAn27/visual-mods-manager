@@ -38,6 +38,23 @@ class AppStrings {
   );
   String get emptyFolder =>
       _text('Thư mục này đang trống.', 'This folder is empty.', '此文件夹为空。');
+  String get dropArchivesHint => _text(
+    'Kéo file ZIP / RAR vào đây để thêm vào thư mục này',
+    'Drag ZIP / RAR files here to add them to this folder',
+    '将 ZIP / RAR 文件拖到此处以添加到此文件夹',
+  );
+  String get dropArchivesHere => _text(
+    'Thả file ZIP / RAR vào đây',
+    'Drop ZIP / RAR files here',
+    '将 ZIP / RAR 文件放到此处',
+  );
+  String get importingArchives =>
+      _text('Đang sao chép file...', 'Copying files...', '正在复制文件…');
+  String archivesImported(int imported, int skipped, int failed) => _text(
+    'Đã thêm $imported file · Bỏ qua $skipped · Lỗi $failed',
+    'Added $imported files · Skipped $skipped · Failed $failed',
+    '已添加 $imported 个文件 · 已跳过 $skipped · 失败 $failed',
+  );
   String get openFolder => _text('Mở trong thư mục', 'Open folder', '打开文件夹');
   String get deleteTitle =>
       _text('Xoá mục này?', 'Delete this item?', '删除此项目？');
