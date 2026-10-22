@@ -31,13 +31,14 @@ jobs:
         env:
           BEFORE_COMMIT: ${{ github.event_name == 'push' && github.event.before || '' }}
         run: python3 scripts/prepare_github_release.py
-      - name: Require Windows update signing secret
+      - name: Require update signing secrets
         if: steps.version.outputs.should_release == 'true'
         env:
           WINDOWS_KEY: ${{ secrets.WINDOWS_DSA_PRIVATE_KEY_BASE64 }}
+          MACOS_KEY: ${{ secrets.MACOS_UPDATE_PRIVATE_KEY }}
         run: |
-          if [ -z "$WINDOWS_KEY" ]; then
-            echo '::error::Set WINDOWS_DSA_PRIVATE_KEY_BASE64. See docs/windows-release.md.'
+          if [ -z "$WINDOWS_KEY" ] || [ -z "$MACOS_KEY" ]; then
+            echo '::error::Set WINDOWS_DSA_PRIVATE_KEY_BASE64 and MACOS_UPDATE_PRIVATE_KEY. See docs/windows-release.md.'
             exit 1
           fi
 
@@ -90,6 +91,11 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent 'build/macos/Build/Products/Release/Visual Mods Manager.app' "dist/$ARCHIVE_NAME.zip"
           cd dist
           shasum -a 256 "$ARCHIVE_NAME.zip" > "$ARCHIVE_NAME.sha256"
+      - name: Sign macOS update and create appcast
+        if: matrix.target == 'macos'
+        env:
+          MACOS_UPDATE_PRIVATE_KEY: ${{ secrets.MACOS_UPDATE_PRIVATE_KEY }}
+        run: python3 scripts/create_macos_appcast.py --arch ${{ matrix.arch }} --archive "dist/$ARCHIVE_NAME.zip"
       - name: Build Windows
         if: matrix.target == 'windows'
         run: flutter build windows --release
@@ -154,6 +160,8 @@ jobs:
           sha256sum --check ./*.sha256
           test -s Visual-Mods-Manager-Setup.exe
           test -s appcast.xml
+          test -s appcast-macos-arm64.xml
+          test -s appcast-macos-x86_64.xml
           sha256sum ./*.zip ./*.exe ./*.xml > SHA256SUMS.txt
       - name: Create draft with app downloads
         run: |

@@ -4,7 +4,7 @@ import '../../../core/localization/app_locale_cubit.dart';
 import '../../../core/localization/app_strings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_background.dart';
-import '../../../core/update/windows_update_service.dart';
+import '../../../core/update/desktop_update_service.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 
@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _checkForUpdates() async {
     setState(() => checkingForUpdates = true);
     try {
-      await WindowsUpdateService.instance.checkNow();
+      await DesktopUpdateService.instance.checkNow();
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +145,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               const SizedBox(height: 16),
               _LanguageSettings(onChanged: _changeLanguage),
-              if (WindowsUpdateService.instance.isAvailable) ...[
+              if (DesktopUpdateService.instance.isAvailable) ...[
                 const SizedBox(height: 32),
                 Text(
                   AppStrings.of(context).appUpdates,

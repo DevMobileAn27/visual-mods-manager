@@ -7,6 +7,7 @@ title: Visual Mods Manager {version}
 
 - Bổ sung Phoenix Reffaella, Severian Lowell và ảnh trang phục dùng offline.
 - Bổ sung quy trình tạo bản phát hành cho Windows và macOS.
+- Hỗ trợ cập nhật trong ứng dụng cho macOS Apple Silicon và Intel bằng appcast đã ký riêng.
 
 ## Tải ứng dụng
 
