@@ -1,14 +1,25 @@
 # Visual Mods Manager
 
-Visual Mods Manager giúp bạn sắp xếp và cài đặt mod trang phục cho **Zenless Zone Zero** trên Windows.
+Visual Mods Manager giúp bạn sắp xếp và cài đặt mod trang phục cho **Zenless Zone Zero** trên Windows và macOS.
 
 ![Thư viện Mods](docs/images/library.png)
 
 ## Cài đặt
 
 1. Mở trang [Releases](https://github.com/DevMobileAn27/visual-mods-manager/releases).
-2. Tải `Visual-Mods-Manager-Setup.exe`.
-3. Chạy bộ cài và làm theo hướng dẫn trên màn hình.
+2. Windows: tải và chạy `Visual-Mods-Manager-Setup.exe`.
+3. macOS: tải ZIP `macos-arm64` cho chip Apple hoặc `macos-x86_64` cho chip Intel, giải nén rồi kéo app vào **Applications**.
+
+### macOS chặn mở ứng dụng (quarantine)
+
+Nếu macOS chặn app đã tải từ trang Releases của dự án, sau khi kéo app vào **Applications**, mở **Terminal** và chạy:
+
+```sh
+xattr -dr com.apple.quarantine "/Applications/Visual Mods Manager.app"
+open "/Applications/Visual Mods Manager.app"
+```
+
+Lệnh gỡ thuộc tính quarantine riêng cho Visual Mods Manager. Nếu đặt app ở nơi khác, thay đường dẫn trong cả hai lệnh bằng vị trí thực tế.
 
 ## Thiết lập lần đầu
 
@@ -92,10 +103,12 @@ Thay đổi có hiệu lực ngay sau khi chọn.
 
 ![Màn hình Thiết lập](docs/images/settings.png)
 
-## Cập nhật ứng dụng trên Windows
+## Cập nhật ứng dụng
 
 1. Mở **Thiết lập → Cập nhật ứng dụng → Kiểm tra cập nhật**.
 2. Khi có bản mới, làm theo hướng dẫn tải và cài đặt.
+
+Windows và macOS đều hỗ trợ cập nhật trong app. Bản macOS cũ chưa có tính năng này cần tải và cài thủ công bản có updater một lần.
 
 ## Giấy phép
 
