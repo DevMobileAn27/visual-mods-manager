@@ -34,13 +34,14 @@ jobs:
       - name: Require update signing secrets
         if: steps.version.outputs.should_release == 'true'
         env:
-          WINDOWS_KEY: ${{ secrets.WINDOWS_DSA_PRIVATE_KEY_BASE64 }}
+          WINDOWS_DSA_PRIVATE_KEY_BASE64: ${{ secrets.WINDOWS_DSA_PRIVATE_KEY_BASE64 }}
           MACOS_KEY: ${{ secrets.MACOS_UPDATE_PRIVATE_KEY }}
         run: |
-          if [ -z "$WINDOWS_KEY" ] || [ -z "$MACOS_KEY" ]; then
+          if [ -z "$WINDOWS_DSA_PRIVATE_KEY_BASE64" ] || [ -z "$MACOS_KEY" ]; then
             echo '::error::Set WINDOWS_DSA_PRIVATE_KEY_BASE64 and MACOS_UPDATE_PRIVATE_KEY. See docs/windows-release.md.'
             exit 1
           fi
+          python3 scripts/windows_update_key.py --check
 
   checks:
     name: Check source

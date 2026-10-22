@@ -35,7 +35,7 @@ Trong **Settings → Secrets and variables → Actions**, tạo **hai repository
 
 | Secret | Giá trị |
 | --- | --- |
-| `WINDOWS_DSA_PRIVATE_KEY_BASE64` | Base64 của toàn bộ file `.local-keys/windows-update/dsa_priv.pem` |
+| `WINDOWS_DSA_PRIVATE_KEY_BASE64` | Base64 của toàn bộ file `.local-keys/windows-update/dsa_priv.pem`, hoặc nội dung PEM nguyên bản gồm cả dòng BEGIN/END |
 | `MACOS_UPDATE_PRIVATE_KEY` | Nội dung file `.local-keys/macos-update/ed25519.key` (đã ở dạng Base64, không mã hóa thêm lần nữa) |
 
 Khóa macOS dùng chung cho bản Apple Silicon và Intel. Public key nằm ở `updates/macos_ed25519.pub` và được nhúng vào `SUPublicEDKey` trong Info.plist. Khóa Windows phải khớp với `dsa_pub.pem` hiện có. Sao lưu private keys ở nơi riêng tư; không tạo lại cặp khóa cho mỗi version.
@@ -58,6 +58,8 @@ $keyBase64 | Set-Clipboard
 ```
 
 Dán vào ô secret của GitHub, sau đó xóa clipboard. Không đưa khóa hoặc chuỗi Base64 vào Git, release, log hay issue. Workflow yêu cầu cả hai secrets trước khi build và kiểm tra khóa ký khớp public key. Private key macOS truyền qua stdin cho công cụ ký; file khóa Windows tạm được xóa sau khi ký.
+
+Nếu đã dán PEM nguyên bản vào secret Windows, script cũng đọc được; không cần mã hóa thêm. Không dán đường dẫn file, lệnh tạo Base64 hoặc public key vào secret. Workflow kiểm tra định dạng trước khi build và dừng với hướng dẫn nếu giá trị không hợp lệ.
 
 Khóa macOS đã được tạo cho source này. `bash scripts/generate_macos_update_key.sh` có thể đồng bộ lại public key từ private key đang có; script từ chối thay khóa nếu mất private key nhưng public key đã tồn tại. Máy chỉ dùng để build từ GitHub không cần chạy script này; CI lấy private key từ secret.
 

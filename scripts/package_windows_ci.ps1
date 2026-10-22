@@ -22,7 +22,7 @@ function Invoke-Checked([string]$Command, [string[]]$Arguments) {
 try {
     if (-not $env:WINDOWS_DSA_PRIVATE_KEY_BASE64) { throw 'Missing Windows signing secret' }
     $env:PATH = "C:\Program Files\OpenSSL-Win64\bin;$env:PATH"
-    [IO.File]::WriteAllBytes($keyPath, [Convert]::FromBase64String($env:WINDOWS_DSA_PRIVATE_KEY_BASE64))
+    Invoke-Checked 'python' @('scripts/windows_update_key.py', '--output', $keyPath)
     Invoke-Checked 'openssl' @('pkey', '-in', $keyPath, '-pubout', '-outform', 'DER', '-out', $secretPublic)
     Invoke-Checked 'openssl' @('pkey', '-pubin', '-in', 'dsa_pub.pem', '-outform', 'DER', '-out', $repoPublic)
     if ((Get-FileHash $secretPublic).Hash -ne (Get-FileHash $repoPublic).Hash) {
