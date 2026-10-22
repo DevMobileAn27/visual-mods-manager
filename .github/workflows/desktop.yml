@@ -1,0 +1,171 @@
+name: Build and draft release
+
+on:
+  push:
+    branches: [main]
+    paths: [pubspec.yaml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Validate release version
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.version.outputs.should_release }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      title: ${{ steps.version.outputs.title }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read version and verify tag
+        id: version
+        env:
+          BEFORE_COMMIT: ${{ github.event_name == 'push' && github.event.before || '' }}
+        run: python3 scripts/prepare_github_release.py
+      - name: Require Windows update signing secret
+        if: steps.version.outputs.should_release == 'true'
+        env:
+          WINDOWS_KEY: ${{ secrets.WINDOWS_DSA_PRIVATE_KEY_BASE64 }}
+        run: |
+          if [ -z "$WINDOWS_KEY" ]; then
+            echo '::error::Set WINDOWS_DSA_PRIVATE_KEY_BASE64. See docs/windows-release.md.'
+            exit 1
+          fi
+
+  checks:
+    name: Check source
+    needs: version
+    if: needs.version.outputs.should_release == 'true'
+    uses: ./.github/workflows/checks.yml
+
+  build:
+    name: Build ${{ matrix.label }}
+    needs: [version, checks]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos
+            arch: arm64
+            label: macOS Apple Silicon
+          - os: macos-latest
+            target: macos
+            arch: x86_64
+            label: macOS Intel
+          - os: windows-latest
+            target: windows
+            arch: x64
+            label: Windows x64
+    runs-on: ${{ matrix.os }}
+    env:
+      APP_VERSION: ${{ needs.version.outputs.version }}
+      ARCHIVE_NAME: visual-mods-manager-${{ needs.version.outputs.version }}-${{ matrix.target }}-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: flutter pub get
+      - name: Build macOS
+        if: matrix.target == 'macos'
+        run: bash scripts/build_macos.sh ${{ matrix.arch }}
+      - name: Package macOS
+        if: matrix.target == 'macos'
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent 'build/macos/Build/Products/Release/Visual Mods Manager.app' "dist/$ARCHIVE_NAME.zip"
+          cd dist
+          shasum -a 256 "$ARCHIVE_NAME.zip" > "$ARCHIVE_NAME.sha256"
+      - name: Build Windows
+        if: matrix.target == 'windows'
+        run: flutter build windows --release
+      - name: Install Windows packaging tools
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          choco install innosetup openssl.light 7zip -y --no-progress
+          if ($LASTEXITCODE -notin @(0, 3010)) { throw 'Packaging tools installation failed' }
+      - name: Package Windows and sign appcast
+        if: matrix.target == 'windows'
+        shell: pwsh
+        env:
+          WINDOWS_DSA_PRIVATE_KEY_BASE64: ${{ secrets.WINDOWS_DSA_PRIVATE_KEY_BASE64 }}
+        run: ./scripts/package_windows_ci.ps1 -Version $env:APP_VERSION -Repository $env:GITHUB_REPOSITORY
+      - name: Remove temporary signing files
+        if: always() && matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          foreach ($name in @('vmm-dsa-private.pem', 'vmm-secret-public.der', 'vmm-repo-public.der')) {
+            $file = Join-Path $env:RUNNER_TEMP $name
+            if (Test-Path $file) { Remove-Item $file -Force }
+          }
+      - name: Upload app (kept for 7 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create draft ${{ needs.version.outputs.tag }}
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      RELEASE_TITLE: ${{ needs.version.outputs.title }}
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare description and recheck tag
+        run: python3 scripts/prepare_github_release.py
+      - name: Download all three app builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: visual-mods-manager-${{ needs.version.outputs.version }}-*
+          path: dist
+          merge-multiple: true
+      - name: Verify downloads and generate checksums
+        run: |
+          cd dist
+          for platform in macos-arm64 macos-x86_64 windows-x64; do
+            test -s "visual-mods-manager-$RELEASE_VERSION-$platform.zip"
+            test -s "visual-mods-manager-$RELEASE_VERSION-$platform.sha256"
+          done
+          sha256sum --check ./*.sha256
+          test -s Visual-Mods-Manager-Setup.exe
+          test -s appcast.xml
+          sha256sum ./*.zip ./*.exe ./*.xml > SHA256SUMS.txt
+      - name: Create draft with app downloads
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "::error::Release $RELEASE_TAG already exists. It will not be overwritten."
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" \
+            --draft \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_TITLE" \
+            --notes-file build/release-notes.md \
+            dist/*.zip dist/*.exe dist/*.xml dist/SHA256SUMS.txt
+          printf '## Draft ready\n\nReview and publish: %s\n' \
+            "$(gh release view "$RELEASE_TAG" --json url --jq .url)" >> "$GITHUB_STEP_SUMMARY"
